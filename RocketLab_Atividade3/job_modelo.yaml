@@ -1,0 +1,38 @@
+resources:
+  jobs:
+    cinedata_analytics:
+      name: CineData Analytics
+      max_concurrent_runs: 1
+      parameters:
+        - name: catalogo
+          default: workspace
+        - name: base_path
+          default: /Volumes/workspace/default/movies_data/
+        - name: data_inicio
+          default: ""
+        - name: data_fim
+          default: ""
+      schedule:
+        quartz_cron_expression: "0 0 8 * * ?"
+        timezone_id: America/Sao_Paulo
+        pause_status: UNPAUSED
+      tasks:
+        - task_key: to_Bronze
+          notebook_task:
+            notebook_path: /Workspace/CineData/Landing_to_Bronze
+            source: WORKSPACE
+          timeout_seconds: 3600
+        - task_key: to_Silver
+          depends_on:
+            - task_key: to_Bronze
+          notebook_task:
+            notebook_path: /Workspace/CineData/Bronze_to_Silver
+            source: WORKSPACE
+          timeout_seconds: 3600
+        - task_key: to_Gold
+          depends_on:
+            - task_key: to_Silver
+          notebook_task:
+            notebook_path: /Workspace/CineData/Silver_to_Gold
+            source: WORKSPACE
+          timeout_seconds: 3600
